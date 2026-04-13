@@ -277,9 +277,8 @@
     <div class="modal-emoji" id="modal-emoji">🎉</div>
     <h3 id="modal-title">Victory!</h3>
     <p id="modal-msg">Spell cast successfully!</p>
-    <div class="modal-actions">
-      <button class="btn-primary" onclick="nextLesson()">Next →</button>
-      <button class="btn-secondary" onclick="document.getElementById('result-modal').style.display='none'">Close</button>
+    <div class="modal-actions" style="margin-top: 20px;">
+      <button id="modal-primary-btn" class="btn-primary" onclick="nextLesson()" style="min-width: 160px; padding: 14px 32px;">Next →</button>
     </div>
   </div>
 </div>
@@ -460,9 +459,17 @@
     
     // Load saved progress from localStorage
     const saved = localStorage.getItem('pq_save_' + googleUserId);
+    const guestSaved = localStorage.getItem('pq_save_guest');
+    
     if (saved) {
       const data = JSON.parse(saved);
       currentPlayer = { ...currentPlayer, ...data };
+    } else if (guestSaved) {
+      // If logging in for the first time, carry over guest progress!
+      const data = JSON.parse(guestSaved);
+      currentPlayer = { ...currentPlayer, ...data };
+      currentPlayer.name = payload.name.split(' ')[0];
+      saveProgress(); // Sync to cloud/account immediately
     } else {
       currentPlayer.name = payload.name.split(' ')[0]; // First name
     }
@@ -480,8 +487,13 @@
   function saveProgress() {
     if (googleUserId) {
       localStorage.setItem('pq_save_' + googleUserId, JSON.stringify(currentPlayer));
+    } else {
+      // Guest fallback
+      localStorage.setItem('pq_save_guest', JSON.stringify(currentPlayer));
     }
   }
+
+  window.addEventListener('beforeunload', saveProgress);
 
   function signOut() {
     googleUserId = null;
@@ -675,6 +687,9 @@
              document.getElementById('modal-title').textContent = "Try Again!";
              document.getElementById('modal-title').style.color = "var(--red)";
              document.getElementById('modal-msg').textContent = "Syntax Error. The runes were incorrectly inscribed.";
+             const btn = document.getElementById('modal-primary-btn');
+             btn.textContent = "Retry ⟳";
+             btn.onclick = () => { document.getElementById('result-modal').style.display='none'; };
           }
         }
       })
@@ -706,11 +721,13 @@
     setTimeout(() => {
       document.getElementById('minigame-modal').style.display = 'none';
       document.getElementById('result-modal').style.display = 'flex';
-      document.getElementById('modal-title').textContent = "Victory!";
       document.getElementById('modal-title').style.color = "var(--green)";
       let msg = `Spell cast successfully! You found ${bonusXP} bonus XP!`;
       if (bonusStars) msg += " And you uncovered a shiny star!";
       document.getElementById('modal-msg').textContent = msg;
+      const btn = document.getElementById('modal-primary-btn');
+      btn.textContent = "Next →";
+      btn.onclick = nextLesson;
     }, 1800);
   }
 
@@ -968,12 +985,16 @@
           currentPlayer.completedLessons.push(currentLesson.id);
       }
       
+      saveProgress();
+      
       setTimeout(() => {
         document.getElementById('arcade-modal').style.display = 'none';
         document.getElementById('result-modal').style.display = 'flex';
-        document.getElementById('modal-title').textContent = "Victory!";
         document.getElementById('modal-title').style.color = "var(--green)";
         document.getElementById('modal-msg').textContent = `Spell cast successfully! You scored ${bonusXP} bonus XP in ${arcadeGameDef.title}!`;
+        const btn = document.getElementById('modal-primary-btn');
+        btn.textContent = "Next →";
+        btn.onclick = nextLesson;
       }, 1000);
     }
   }
