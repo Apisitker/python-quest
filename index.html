@@ -169,6 +169,10 @@
     .badge-icon { background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:12px; padding:10px; font-size:1.5rem; filter:grayscale(100%); opacity:0.3; transition:all 0.3s; }
     .badge-icon.unlocked { filter:grayscale(0); opacity:1; border-color:var(--yellow); background:rgba(245,200,66,0.1); }
     
+    .hud-badges { display:flex; gap:6px; margin-top:4px; }
+    .mini-badge { font-size:0.8rem; filter:grayscale(100%); opacity:0.25; transition:0.3s; padding:2px 6px; border-radius:6px; background:rgba(255,255,255,0.05); }
+    .mini-badge.unlocked { filter:grayscale(0); opacity:1; background:rgba(245,200,66,0.15); border:1px solid rgba(245,200,66,0.2); }
+    
     .chests-container { display: flex; gap: 20px; justify-content: center; margin-top: 10px; }
     .mystery-chest { font-size: 4.5rem; cursor: pointer; transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), filter 0.25s; user-select: none; filter: drop-shadow(0 0 10px rgba(245,200,66,0.3)); }
     .mystery-chest:hover { transform: scale(1.15) translateY(-5px); filter: drop-shadow(0 0 25px rgba(245,200,66,0.8)); }
@@ -245,6 +249,11 @@
       <div class="hud-info">
         <span id="hud-name" style="font-weight:700; font-size:0.95rem;">Hero</span>
         <span id="hud-level" class="hud-level">Lv.1 Apprentice</span>
+        <div class="hud-badges" id="hud-badges">
+           <span class="mini-badge" id="hud-badge-junior" title="Junior">👔</span>
+           <span class="mini-badge" id="hud-badge-mid" title="Mid-Level">💻</span>
+           <span class="mini-badge" id="hud-badge-senior" title="Senior">👑</span>
+        </div>
       </div>
     </div>
     <div class="hud-center">
@@ -1095,6 +1104,415 @@
         ctx.fillStyle = '#0f0'; ctx.fillRect(s.x, s.y, 20, 20);
         ctx.fillStyle = '#aaa'; s.rocks.forEach(r => ctx.fillRect(r.x, r.y, 20, 20));
       }
+    },
+    {
+      title: "Memory Match", fps: 40, goal: "Match the pairs of emojis.", controls: "Click to flip card.",
+      init: () => { 
+        let icons = ['🐍','🔥','❄️','💎','🍎','🦊'];
+        let cards = [...icons, ...icons].sort(() => Math.random() - 0.5).map(icon => ({icon, flipped:false, solved:false}));
+        arcadeState = { cards, flipped: [], locks: false };
+      },
+      click: (x, y) => {
+        let s = arcadeState; if(s.locks) return;
+        let col = Math.floor(x/75), row = Math.floor(y/75);
+        let idx = row*4 + col; if(!s.cards[idx] || s.cards[idx].flipped || s.cards[idx].solved) return;
+        s.cards[idx].flipped = true; s.flipped.push(idx);
+        if(s.flipped.length === 2) {
+          s.locks = true;
+          setTimeout(() => {
+            let [a, b] = s.flipped;
+            if(s.cards[a].icon === s.cards[b].icon) { s.cards[a].solved = s.cards[b].solved = true; arcadeScore++; updateArcadeScore(); }
+            else { s.cards[a].flipped = s.cards[b].flipped = false; }
+            s.flipped = []; s.locks = false;
+            if(s.cards.every(c => c.solved)) arcadeCrash(); // Reset/Win
+          }, 500);
+        }
+      },
+      loop: (ctx) => {
+        let s = arcadeState; ctx.fillStyle = '#000'; ctx.fillRect(0,0,300,300);
+        s.cards.forEach((c, i) => {
+          let x = (i%4)*75, y = Math.floor(i/4)*75;
+          ctx.fillStyle = c.solved ? '#222' : (c.flipped ? '#333' : '#444');
+          ctx.fillRect(x+5, y+5, 65, 65);
+          if(c.flipped || c.solved) { ctx.font = '2rem Arial'; ctx.textAlign = 'center'; ctx.fillText(c.icon, x+37, y+45); }
+        });
+      }
+    },
+    {
+       title: "Reflex Square", fps: 40, goal: "Click the green square quickly!", controls: "Click/Tap.",
+       init: () => { arcadeState = { x: 100, y: 100, t: 0 }; },
+       click: (x, y) => {
+         let s = arcadeState;
+         if(x > s.x && x < s.x+50 && y > s.y && y < s.y+50) {
+           arcadeScore++; updateArcadeScore();
+           s.x = Math.random()*250; s.y = Math.random()*250; s.t = 0;
+         }
+       },
+       loop: (ctx) => {
+         let s = arcadeState; s.t++;
+         if(s.t > 60) return arcadeCrash();
+         ctx.fillStyle = '#000'; ctx.fillRect(0,0,300,300);
+         ctx.fillStyle = '#0f0'; ctx.fillRect(s.x, s.y, 50, 50);
+         ctx.fillStyle = '#f00'; ctx.fillRect(0, 0, (s.t/60)*300, 5);
+       }
+    },
+    {
+       title: "Doodle Climber", fps: 40, goal: "Climb the platforms to escape.", controls: "Left/Right Arrows.",
+       init: () => { arcadeState = { x: 150, y: 250, vy: 0, plats: [{x:100,y:280}, {x:50,y:200}, {x:200,y:120}, {x:100,y:40}] }; },
+       keydown: (e) => {
+          let s = arcadeState; if(e.key === 'ArrowLeft') s.x -= 20; if(e.key === 'ArrowRight') s.x += 20;
+       },
+       loop: (ctx) => {
+          let s = arcadeState; s.vy += 0.4; s.y += s.vy;
+          if(s.y > 300) return arcadeCrash();
+          if(s.y < 50) { let dy = 50 - s.y; s.y = 50; s.plats.forEach(p => { p.y += dy; if(p.y > 300) { p.y = 0; p.x = Math.random()*250; arcadeScore++; updateArcadeScore(); } }); }
+          s.plats.forEach(p => { if(s.vy > 0 && s.x+20 > p.x && s.x < p.x+50 && s.y+20 > p.y && s.y+20 < p.y+15) { s.vy = -10; } });
+          ctx.fillStyle = '#000'; ctx.fillRect(0,0,300,300);
+          ctx.fillStyle = '#0ff'; s.plats.forEach(p => ctx.fillRect(p.x, p.y, 50, 10));
+          ctx.fillStyle = '#ff0'; ctx.fillRect(s.x, s.y, 20, 20);
+       }
+    },
+    {
+       title: "Math Rush", fps: 40, goal: "Solve the math problem correctly.", controls: "Use mouse to click the answer.",
+       init: () => { 
+          let a = Math.floor(Math.random()*10), b = Math.floor(Math.random()*10);
+          let ans = a + b, wrong = ans + (Math.random()>0.5?1:-1);
+          arcadeState = { q: `${a} + ${b} = ?`, ans, opts: [ans, wrong].sort(() => Math.random()-0.5), t: 0 };
+       },
+       click: (x, y) => {
+          let s = arcadeState;
+          let idx = y > 150 ? (x > 150 ? 1 : 0) : -1;
+          if(y > 200) {
+             let choice = x < 150 ? s.opts[0] : s.opts[1];
+             if(choice === s.ans) { arcadeScore++; updateArcadeScore(); arcadeGameDef.init(); }
+             else return arcadeCrash();
+          }
+       },
+       loop: (ctx) => {
+          let s = arcadeState; s.t++; if(s.t > 80) return arcadeCrash();
+          ctx.fillStyle = '#000'; ctx.fillRect(0,0,300,300);
+          ctx.fillStyle = '#fff'; ctx.font = '2rem Arial'; ctx.textAlign='center'; ctx.fillText(s.q, 150, 100);
+          ctx.fillStyle = '#333'; ctx.fillRect(20, 210, 120, 60); ctx.fillRect(160, 210, 120, 60);
+          ctx.fillStyle = '#fff'; ctx.fillText(s.opts[0], 80, 250); ctx.fillText(s.opts[1], 220, 250);
+          ctx.fillStyle = '#00f'; ctx.fillRect(0, 0, 300 - (s.t/80)*300, 5);
+       }
+    },
+    {
+       title: "Traffic Crosser", fps: 40, goal: "Cross the road safely.", controls: "Arrow Keys.",
+       init: () => { arcadeState = { x: 140, y: 270, cars: [{x:0, y:50, s:3}, {x:100, y:120, s:-4}, {x:200, y:190, s:2}] }; },
+       keydown: (e) => {
+          let s = arcadeState;
+          if(e.key === 'ArrowUp') s.y -= 30; if(e.key === 'ArrowDown') s.y += 30;
+          if(e.key === 'ArrowLeft') s.x -= 20; if(e.key === 'ArrowRight') s.x += 20;
+       },
+       loop: (ctx) => {
+          let s = arcadeState;
+          s.cars.forEach(c => { 
+            c.x += c.s; if(c.x > 300) c.x = -40; if(c.x < -40) c.x = 300;
+            if(Math.abs(c.x - s.x) < 30 && Math.abs(c.y - s.y) < 20) return arcadeCrash();
+          });
+          if(s.y < 20) { arcadeScore += 5; updateArcadeScore(); s.y = 270; }
+          ctx.fillStyle = '#111'; ctx.fillRect(0,0,300,300);
+          ctx.fillStyle = '#444'; ctx.fillRect(0, 40, 300, 40); ctx.fillRect(0, 110, 300, 40); ctx.fillRect(0, 180, 300, 40);
+          ctx.fillStyle = '#f00'; s.cars.forEach(c => ctx.fillRect(c.x, c.y, 40, 20));
+          ctx.fillStyle = '#0f0'; ctx.font = '1.5rem Arial'; ctx.fillText('🐍', s.x, s.y+20);
+       }
+    },
+    {
+       title: "Simon Coder", fps: 40, goal: "Repeat the sequence of colors.", controls: "Click the colored panels.",
+       init: () => { arcadeState = { seq: [Math.floor(Math.random()*4)], user: [], waiting: false, t: 0, showIdx: 0, flash: -1 }; },
+       click: (x, y) => {
+          let s = arcadeState; if(!s.waiting) return;
+          let idx = y < 150 ? (x < 150 ? 0 : 1) : (x < 150 ? 2 : 3);
+          s.flash = idx; setTimeout(() => s.flash = -1, 200);
+          s.user.push(idx);
+          if(s.user[s.user.length-1] !== s.seq[s.user.length-1]) return arcadeCrash();
+          if(s.user.length === s.seq.length) { 
+            arcadeScore++; updateArcadeScore(); 
+            s.seq.push(Math.floor(Math.random()*4)); s.user = []; s.waiting = false; s.showIdx = 0; s.t = 0;
+          }
+       },
+       loop: (ctx) => {
+          let s = arcadeState; s.t++;
+          if(!s.waiting && s.t % 40 === 0) {
+             s.flash = s.seq[s.showIdx]; setTimeout(() => s.flash = -1, 300);
+             s.showIdx++; if(s.showIdx >= s.seq.length) s.waiting = true;
+          }
+          let colors = ['#f00','#0f0','#00f','#ff0'];
+          ctx.fillStyle = '#000'; ctx.fillRect(0,0,300,300);
+          for(let i=0; i<4; i++) {
+             ctx.fillStyle = colors[i]; ctx.globalAlpha = s.flash === i ? 1 : 0.3;
+             ctx.fillRect((i%2)*150, Math.floor(i/2)*150, 150, 150);
+          }
+          ctx.globalAlpha = 1;
+       }
+    },
+    {
+       title: "Balloon Popper", fps: 40, goal: "Pop the moving balloons!", controls: "Click to pop.",
+       init: () => { arcadeState = { bs: [{x:150, y:320, s:2, c:'#f00'}] }; },
+       click: (x, y) => {
+          let s = arcadeState;
+          s.bs.forEach((b, i) => {
+            if(Math.sqrt((x-b.x)**2 + (y-b.y)**2) < 30) { s.bs.splice(i,1); arcadeScore++; updateArcadeScore(); }
+          });
+       },
+       loop: (ctx) => {
+          let s = arcadeState; if(Math.random() < 0.05) s.bs.push({x:Math.random()*280, y:320, s:Math.random()*3+1, c:`hsl(${Math.random()*360},70%,50%)`});
+          ctx.fillStyle = '#000'; ctx.fillRect(0,0,300,300);
+          s.bs.forEach((b, i) => {
+            b.y -= b.s; if(b.y < -50) { s.bs.splice(i,1); arcadeCrash(); }
+            ctx.fillStyle = b.c; ctx.beginPath(); ctx.arc(b.x, b.y, 25, 0, Math.PI*2); ctx.fill();
+          });
+       }
+    },
+    {
+       title: "Gravity Dodge", fps: 40, goal: "Flip gravity to avoid spikes.", controls: "SPACE to flip gravity.",
+       init: () => { arcadeState = { x: 50, y: 150, g: 0.5, vy: 0, obs: [{x:300, y:0, h:50}] }; },
+       keydown: (e) => { if(e.code === 'Space') { e.preventDefault(); arcadeState.g *= -1; } },
+       loop: (ctx) => {
+          let s = arcadeState; s.vy += s.g; s.y += s.vy;
+          if(s.y < 0 || s.y > 300) return arcadeCrash();
+          s.obs.forEach(o => { 
+            o.x -= 5; if(o.x < -30) { o.x = 300; o.y = Math.random()>0.5?0:250; o.h = 50; arcadeScore++; updateArcadeScore(); }
+            if(s.x+20 > o.x && s.x < o.x+30 && s.y+20 > o.y && s.y < o.y+o.h) return arcadeCrash();
+          });
+          ctx.fillStyle = '#111'; ctx.fillRect(0,0,300,300);
+          ctx.fillStyle = '#f00'; s.obs.forEach(o => ctx.fillRect(o.x, o.y, 30, o.h));
+          ctx.fillStyle = '#0ff'; ctx.fillRect(s.x, s.y, 20, 20);
+       }
+    },
+    {
+       title: "Paddle AI", fps: 40, goal: "Win 3 points against the CPU.", controls: "Up/Down Arrows.",
+       init: () => { arcadeState = { py: 120, cy: 120, bx: 150, by: 150, dx: 4, dy: 3, ps: 0, cs: 0 }; },
+       keydown: (e) => {
+          let s = arcadeState; if(e.key === 'ArrowUp') s.py = Math.max(0, s.py-30); if(e.key === 'ArrowDown') s.py = Math.min(240, s.py+30);
+       },
+       loop: (ctx) => {
+          let s = arcadeState; s.bx += s.dx; s.by += s.dy;
+          if(s.by < 0 || s.by > 290) s.dy *= -1;
+          if(s.bx < 20 && s.by+10 > s.py && s.by < s.py+60) s.dx = Math.abs(s.dx);
+          if(s.bx > 270 && s.by+10 > s.cy && s.by < s.cy+60) s.dx = -Math.abs(s.dx);
+          if(s.bx < 0) { s.cs++; s.bx=150; if(s.cs>=3) return arcadeCrash(); }
+          if(s.bx > 300) { s.ps++; s.bx=150; arcadeScore += 10; updateArcadeScore(); if(s.ps>=3) return arcadeCrash(); }
+          if(s.cy+30 < s.by) s.cy += 3; else s.cy -= 3;
+          ctx.fillStyle = '#000'; ctx.fillRect(0,0,300,300);
+          ctx.fillStyle = '#fff'; ctx.fillRect(10, s.py, 10, 60); ctx.fillRect(280, s.cy, 10, 60);
+          ctx.fillRect(s.bx, s.by, 10, 10);
+       }
+    },
+    {
+       title: "Maze Explorer", fps: 40, goal: "Reach the gold exit! ⭐", controls: "Arrow Keys.",
+       init: () => { 
+          let maze = [
+            [0,1,0,0,0],[0,1,0,1,0],[0,0,0,1,0],[1,1,0,1,0],[0,0,0,0,2]
+          ];
+          arcadeState = { x: 0, y: 0, maze };
+       },
+       keydown: (e) => {
+          let s = arcadeState; let nx = s.x, ny = s.y;
+          if(e.key === 'ArrowUp') ny--; if(e.key === 'ArrowDown') ny++;
+          if(e.key === 'ArrowLeft') nx--; if(e.key === 'ArrowRight') nx++;
+          if(nx>=0 && nx<5 && ny>=0 && ny<5 && s.maze[ny][nx] !== 1) {
+            s.x = nx; s.y = ny;
+            if(s.maze[ny][nx] === 2) { arcadeScore += 50; updateArcadeScore(); arcadeGameDef.init(); }
+          }
+       },
+       loop: (ctx) => {
+          let s = arcadeState; ctx.fillStyle = '#000'; ctx.fillRect(0,0,300,300);
+          for(let r=0; r<5; r++) for(let c=0; c<5; c++) {
+             ctx.fillStyle = s.maze[r][c] === 1 ? '#444' : (s.maze[r][c] === 2 ? '#ff0' : '#222');
+             ctx.fillRect(c*60+2, r*60+2, 56, 56);
+          }
+          ctx.fillStyle = '#0f0'; ctx.font = '2rem Arial'; ctx.fillText('🐍', s.x*60+15, s.y*60+45);
+       }
+    },
+    {
+       title: "Word Unscrambler", fps: 40, goal: "Pick the correct unscrambled keyword.", controls: "Click the correct word.",
+       init: () => {
+          const words = ["print", "while", "return", "import", "class", "global"];
+          const w = words[Math.floor(Math.random()*words.length)];
+          const s = w.split('').sort(() => Math.random()-0.5).join('');
+          const opts = [w, words.filter(o => o!==w)[0]].sort(() => Math.random()-0.5);
+          arcadeState = { s, ans: w, opts };
+       },
+       click: (x, y) => {
+          let s = arcadeState; if(y < 200) return;
+          let choice = x < 150 ? s.opts[0] : s.opts[1];
+          if(choice === s.ans) { arcadeScore += 10; updateArcadeScore(); arcadeGameDef.init(); }
+          else return arcadeCrash();
+       },
+       loop: (ctx) => {
+          let s = arcadeState; ctx.fillStyle = '#000'; ctx.fillRect(0,0,300,300);
+          ctx.fillStyle = '#fff'; ctx.font = '2rem Arial'; ctx.textAlign='center'; ctx.fillText(s.s, 150, 100);
+          ctx.fillStyle = '#333'; ctx.fillRect(20, 210, 120, 60); ctx.fillRect(160, 210, 120, 60);
+          ctx.fillStyle = '#fff'; ctx.font = '1rem Arial'; ctx.fillText(s.opts[0], 80, 250); ctx.fillText(s.opts[1], 220, 250);
+       }
+    },
+    {
+       title: "Hex Matcher", fps: 40, goal: "Which hex matches the color?", controls: "Click the hex code.",
+       init: () => {
+          const c = [['#f00','RED'], ['#0f0','GREEN'], ['#00f','BLUE'], ['#ff0','YELLOW']];
+          const pair = c[Math.floor(Math.random()*4)];
+          const wrong = c.filter(p => p[0]!==pair[0])[0];
+          arcadeState = { color: pair[0], ans: pair[0], opts: [pair[0], wrong[0]].sort(() => Math.random()-0.5) };
+       },
+       click: (x, y) => {
+          let s = arcadeState; if(y < 200) return;
+          let choice = x < 150 ? s.opts[0] : s.opts[1];
+          if(choice === s.ans) { arcadeScore += 5; updateArcadeScore(); arcadeGameDef.init(); }
+          else return arcadeCrash();
+       },
+       loop: (ctx) => {
+          let s = arcadeState; ctx.fillStyle = '#000'; ctx.fillRect(0,0,300,300);
+          ctx.fillStyle = s.color; ctx.fillRect(100, 50, 100, 100);
+          ctx.fillStyle = '#333'; ctx.fillRect(20, 210, 120, 60); ctx.fillRect(160, 210, 120, 60);
+          ctx.fillStyle = '#fff'; ctx.font = '1rem Arial'; ctx.textAlign='center'; ctx.fillText(s.opts[0], 80, 250); ctx.fillText(s.opts[1], 220, 250);
+       }
+    },
+    {
+       title: "Stack Tower", fps: 40, goal: "Stack the blocks! Space to drop.", controls: "SPACE to stack.",
+       init: () => { arcadeState = { x: 0, dx: 4, stack: [{x:110, w:80}] }; },
+       keydown: (e) => {
+          if(e.code === 'Space') {
+             e.preventDefault(); let s = arcadeState;
+             let last = s.stack[s.stack.length-1];
+             if(s.x > last.x + last.w || s.x + last.w < last.x) return arcadeCrash();
+             let nx = Math.max(s.x, last.x), nw = Math.min(s.x+last.w, last.x+last.w) - nx;
+             s.stack.push({x: nx, w: nw}); s.x = 0; arcadeScore += 5; updateArcadeScore();
+             if(s.stack.length > 8) s.stack.shift();
+          }
+       },
+       loop: (ctx) => {
+          let s = arcadeState; s.x += s.dx; if(s.x < 0 || s.x > 220) s.dx *= -1;
+          ctx.fillStyle = '#000'; ctx.fillRect(0,0,300,300);
+          ctx.fillStyle = '#0f0'; s.stack.forEach((b, i) => ctx.fillRect(b.x, 280 - i*20, b.w, 15));
+          ctx.fillStyle = '#fff'; ctx.fillRect(s.x, 280 - s.stack.length*20, s.stack[s.stack.length-1].w, 15);
+       }
+    },
+    {
+       title: "Whack-A-Linter", fps: 40, goal: "Whack the bugs!", controls: "Click the bugs.",
+       init: () => { arcadeState = { holes: [0,0,0,0,0,0,0,0,0], active: -1, t: 0 }; },
+       click: (x, y) => {
+          let s = arcadeState; let col = Math.floor(x/100), row = Math.floor(y/100);
+          let idx = row*3 + col; if(idx === s.active) { s.active = -1; arcadeScore++; updateArcadeScore(); }
+       },
+       loop: (ctx) => {
+          let s = arcadeState; s.t++;
+          if(s.t % 40 === 0) s.active = Math.floor(Math.random()*9);
+          ctx.fillStyle = '#111'; ctx.fillRect(0,0,300,300);
+          for(let i=0; i<9; i++) {
+             ctx.fillStyle = '#333'; ctx.beginPath(); ctx.ellipse((i%3)*100+50, Math.floor(i/3)*100+50, 40, 20, 0, 0, Math.PI*2); ctx.fill();
+             if(s.active === i) { ctx.font = '2rem Arial'; ctx.textAlign='center'; ctx.fillText('🪲', (i%3)*100+50, Math.floor(i/3)*100+65); }
+          }
+       }
+    },
+    {
+       title: "Rain Dodge", fps: 40, goal: "Avoid the blue raindrops.", controls: "Arrow keys.",
+       init: () => { arcadeState = { x: 140, rain: [] }; },
+       keydown: (e) => {
+          let s = arcadeState; if(e.key === 'ArrowLeft') s.x = Math.max(0, s.x-20); if(e.key === 'ArrowRight') s.x = Math.min(280, s.x+20);
+       },
+       loop: (ctx) => {
+          let s = arcadeState; if(Math.random() < 0.2) s.rain.push({x:Math.random()*290, y:0, s:Math.random()*5+3});
+          ctx.fillStyle = '#000'; ctx.fillRect(0,0,300,300);
+          s.rain.forEach((r, i) => {
+            r.y += r.s; if(r.y > 300) { s.rain.splice(i,1); arcadeScore++; updateArcadeScore(); }
+            if(Math.abs(r.x - s.x) < 15 && Math.abs(r.y - 280) < 15) return arcadeCrash();
+            ctx.fillStyle = '#00f'; ctx.fillRect(r.x, r.y, 10, 10);
+          });
+          ctx.fillStyle = '#ff0'; ctx.fillRect(s.x, 280, 20, 20);
+       }
+    },
+    {
+       title: "Pattern Lock", fps: 40, goal: "Connect the dots in order (1, 2, 3).", controls: "Click the dots.",
+       init: () => { 
+          const dots = [{i:1,x:50,y:100,d:false},{i:2,x:250,y:100,d:false},{i:3,x:150,y:250,d:false}].sort(() => Math.random()-0.5);
+          arcadeState = { dots, next: 1 }; 
+       },
+       click: (x, y) => {
+          let s = arcadeState;
+          s.dots.forEach(d => {
+            if(!d.d && d.i === s.next && Math.sqrt((x-d.x)**2+(y-d.y)**2) < 20) { d.d = true; s.next++; if(s.next > 3) { arcadeScore += 20; updateArcadeScore(); arcadeGameDef.init(); } }
+          });
+       },
+       loop: (ctx) => {
+          let s = arcadeState; ctx.fillStyle = '#000'; ctx.fillRect(0,0,300,300);
+          s.dots.forEach(d => {
+             ctx.fillStyle = d.d ? '#0f0' : '#444'; ctx.beginPath(); ctx.arc(d.x, d.y, 20, 0, Math.PI*2); ctx.fill();
+             ctx.fillStyle = '#fff'; ctx.font = '1rem Arial'; ctx.textAlign='center'; ctx.fillText(d.i, d.x, d.y+7);
+          });
+       }
+    },
+    {
+       title: "Click Fast", fps: 40, goal: "Click the button 30 times!", controls: "CLICK CLICK CLICK!",
+       init: () => { arcadeState = { count: 30 }; },
+       click: (x, y) => { 
+          if(x>50 && x<250 && y>100 && y<200) { 
+            arcadeState.count--; if(arcadeState.count <= 0) { arcadeScore += 25; updateArcadeScore(); arcadeGameDef.init(); }
+          }
+       },
+       loop: (ctx) => {
+          let s = arcadeState; ctx.fillStyle = '#000'; ctx.fillRect(0,0,300,300);
+          ctx.fillStyle = '#7c6af7'; ctx.fillRect(50, 100, 200, 100);
+          ctx.fillStyle = '#fff'; ctx.font = '2rem Arial'; ctx.textAlign='center'; ctx.fillText(s.count, 150, 160);
+       }
+    },
+    {
+       title: "Path Weaver", fps: 40, goal: "Move through the narrow path.", controls: "Mouse movement.",
+       init: () => { arcadeState = { px: 150, py: 280, walls: [{x:0, y:0, w:100}, {x:200, y:0, w:100}] }; },
+       click: (x, y) => { arcadeState.px = x; arcadeState.py = y; },
+       loop: (ctx) => {
+          let s = arcadeState; if(Math.random() < 0.1) { let w = Math.random()*150+50; s.walls.push({x:0, y:0, w}, {x:w+60, y:0, w:300-w-60}); }
+          ctx.fillStyle = '#000'; ctx.fillRect(0,0,300,300);
+          s.walls.forEach((w, i) => { 
+             w.y += 4; if(w.y > 300) s.walls.splice(i,1);
+             ctx.fillStyle = '#444'; ctx.fillRect(w.x, w.y, w.w, 20);
+             if(s.px > w.x && s.px < w.x+w.w && s.py > w.y && s.py < w.y+20) arcadeCrash();
+          });
+          if(s.py < 20) { arcadeScore += 10; updateArcadeScore(); s.py = 280; }
+          ctx.fillStyle = '#0f0'; ctx.beginPath(); ctx.arc(s.px, s.py, 5, 0, Math.PI*2); ctx.fill();
+       }
+    },
+    {
+       title: "Sort Master", fps: 40, goal: "Click the smaller number.", controls: "Click the smaller box.",
+       init: () => {
+          let a = Math.floor(Math.random()*100), b = Math.floor(Math.random()*100);
+          if(a === b) b++; arcadeState = { a, b, ans: Math.min(a,b) };
+       },
+       click: (x, y) => {
+          let s = arcadeState; if(y < 100 || y > 200) return;
+          let choice = x < 150 ? s.a : s.b;
+          if(choice === s.ans) { arcadeScore += 5; updateArcadeScore(); arcadeGameDef.init(); }
+          else return arcadeCrash();
+       },
+       loop: (ctx) => {
+          let s = arcadeState; ctx.fillStyle = '#000'; ctx.fillRect(0,0,300,300);
+          ctx.fillStyle = '#333'; ctx.fillRect(20, 100, 120, 100); ctx.fillRect(160, 100, 120, 100);
+          ctx.fillStyle = '#fff'; ctx.font = '2rem Arial'; ctx.textAlign='center'; ctx.fillText(s.a, 80, 160); ctx.fillText(s.b, 220, 160);
+       }
+    },
+    {
+       title: "Binary Switch", fps: 40, goal: "Match the target decimal number.", controls: "Click the bits (0/1).",
+       init: () => { 
+          let target = Math.floor(Math.random()*15)+1;
+          arcadeState = { target, bits: [0,0,0,0] }; // 8 4 2 1
+       },
+       click: (x, y) => {
+          let s = arcadeState; if(y < 150 || y > 250) return;
+          let idx = Math.floor((x-20)/65); if(idx>=0 && idx<4) {
+             s.bits[idx] = s.bits[idx] === 0 ? 1 : 0;
+             let val = s.bits[0]*8 + s.bits[1]*4 + s.bits[2]*2 + s.bits[3]*1;
+             if(val === s.target) { arcadeScore += 50; updateArcadeScore(); arcadeGameDef.init(); }
+          }
+       },
+       loop: (ctx) => {
+          let s = arcadeState; ctx.fillStyle = '#000'; ctx.fillRect(0,0,300,300);
+          ctx.fillStyle = '#fff'; ctx.font = '3rem Arial'; ctx.textAlign='center'; ctx.fillText(s.target, 150, 80);
+          s.bits.forEach((b, i) => {
+             ctx.fillStyle = b === 1 ? '#0f0' : '#444'; ctx.fillRect(20 + i*65, 150, 60, 60);
+             ctx.fillStyle = '#fff'; ctx.font = '2rem Arial'; ctx.fillText(b, 50 + i*65, 195);
+          });
+       }
     }
   ];
 
@@ -1121,6 +1539,16 @@
     
     document.removeEventListener('keydown', arcadeKeydownHandler);
     document.addEventListener('keydown', arcadeKeydownHandler);
+    
+    const canvas = document.getElementById('arcade-canvas');
+    canvas.onclick = (e) => {
+      if(!arcadeGameDef || !arcadeGameDef.click) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      arcadeGameDef.click(x, y);
+    };
+    
     spawnArcade();
   }
 
@@ -1252,10 +1680,23 @@
 
   // Update profile badges UI
   function updateProfileBadges() {
-      ['junior','mid','senior'].forEach(b => {
+      const ids = ['junior','mid','senior'];
+      ids.forEach(b => {
+          const unlocked = currentPlayer.badges && currentPlayer.badges.includes(b);
+          
+          // Profile Screen
           const el = document.getElementById('badge-' + b);
-          if (currentPlayer.badges && currentPlayer.badges.includes(b)) el.classList.add('unlocked');
-          else el.classList.remove('unlocked');
+          if (el) {
+            if (unlocked) el.classList.add('unlocked');
+            else el.classList.remove('unlocked');
+          }
+          
+          // HUD
+          const hudEl = document.getElementById('hud-badge-' + b);
+          if (hudEl) {
+            if (unlocked) hudEl.classList.add('unlocked');
+            else hudEl.classList.remove('unlocked');
+          }
       });
   }
 
