@@ -1,0 +1,11 @@
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Build scripts (optional, keep if you like)
+build.ps1
+build2.ps1
+
+# JS source files (not needed since everything is inlined in index.html)
+js/
+css/
