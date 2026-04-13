@@ -340,8 +340,29 @@
         { id: 'w3-l2', title: 'Looping Through Items', theoryHTML: '<h2>Lists</h2><p>You can loop through a list of items easily in Python.</p>', taskHTML: 'Loop through the list <code>loot = ["Gold", "Gem"]</code> and print each item.', initialCode: 'loot = ["Gold", "Gem"]\n# Loop over the loot and print it:\n', expectedOutput: 'Gold\nGem', hint: 'for item in loot:\n    print(item)' },
         { id: 'w3-l3', title: 'The While Loop', theoryHTML: '<h2>While</h2><p>A <code>while</code> loop runs as long as a condition is True.</p>', taskHTML: 'Set <code>energy = 2</code>. Write a while loop that prints <code>"Run"</code> and subtracts 1 from energy each time, until energy is 0.', initialCode: 'energy = 2\n# Write your while loop here:\n', expectedOutput: 'Run\nRun', hint: 'while energy > 0:' }
       ]
+    },
+    {
+      id: 'w4', name: 'Functions Workshop', color: '#3ecf8e', icon: '⚙️', difficulty: 'Intermediate',
+      lessons: [
+        { id: 'w4-l1', title: 'Your First Function', theoryHTML: '<h2>Functions</h2><p>A function is a reusable block of code. Define one using <code>def</code>.</p>', taskHTML: 'Define a function called <code>greet</code> that prints <strong>"Hello Hero"</strong>. Then call it.', initialCode: '# Define your function:\n\n# Call it:\n', expectedOutput: 'Hello Hero', hint: 'def greet():\n    print("Hello Hero")\ngreet()' },
+        { id: 'w4-l2', title: 'Function with Input', theoryHTML: '<h2>Parameters</h2><p>Functions can accept values called <em>parameters</em> inside parentheses.</p>', taskHTML: 'Define a function <code>shout(word)</code> that prints the word followed by <strong>!</strong>. Call it with <strong>"Fire"</strong>.', initialCode: '# Define shout with one parameter:\n\n# Call it:\n', expectedOutput: 'Fire!', hint: 'def shout(word):\n    print(word + "!")\nshout("Fire")' },
+        { id: 'w4-l3', title: 'Returning Values', theoryHTML: '<h2>Return</h2><p>Use <code>return</code> to send a value back from a function so you can use it elsewhere.</p>', taskHTML: 'Write a function <code>double(n)</code> that returns <code>n * 2</code>. Print the result of calling it with <strong>7</strong>.', initialCode: '# Write the function:\n\n# Print the result:\n', expectedOutput: '14', hint: 'def double(n):\n    return n * 2\nprint(double(7))' },
+        { id: 'w4-l4', title: 'Default Arguments', theoryHTML: '<h2>Default Values</h2><p>You can give a parameter a default value so the caller does not have to pass it.</p>', taskHTML: 'Create <code>power(base, exp=2)</code> that returns <code>base ** exp</code>. Print <code>power(3)</code>.', initialCode: '# Define with a default argument:\n\n', expectedOutput: '9', hint: 'def power(base, exp=2):\n    return base ** exp\nprint(power(3))' },
+        { id: 'w4-l5', title: 'Multiple Returns', theoryHTML: '<h2>Multiple Values</h2><p>A function can return more than one value separated by commas — Python packages them as a tuple.</p>', taskHTML: 'Write <code>min_max(a, b)</code> that returns the smaller then larger of two numbers. Print <code>min_max(5, 3)</code>.', initialCode: '# Write min_max:\n\n', expectedOutput: '3 5', hint: 'def min_max(a, b):\n    return min(a,b), max(a,b)\nlo, hi = min_max(5, 3)\nprint(lo, hi)' }
+      ]
+    },
+    {
+      id: 'w5', name: 'Data Dungeon', color: '#ff5c7c', icon: '🏰', difficulty: 'Advanced',
+      lessons: [
+        { id: 'w5-l1', title: 'Lists — The Inventory', theoryHTML: '<h2>Lists</h2><p>A list stores multiple items in order. Access items by their index (starting at 0).</p>', taskHTML: 'Create a list <code>inventory = ["Sword", "Shield", "Potion"]</code> and print the first item.', initialCode: 'inventory = ["Sword", "Shield", "Potion"]\n# Print the first item:\n', expectedOutput: 'Sword', hint: 'print(inventory[0])' },
+        { id: 'w5-l2', title: 'List Methods', theoryHTML: '<h2>append & remove</h2><p>Use <code>.append()</code> to add items and <code>.remove()</code> to delete them.</p>', taskHTML: 'Start with <code>items = ["Apple"]</code>. Append <strong>"Banana"</strong> then print the list length.', initialCode: 'items = ["Apple"]\n# Append Banana:\n\n# Print the length:\n', expectedOutput: '2', hint: 'items.append("Banana")\nprint(len(items))' },
+        { id: 'w5-l3', title: 'Dictionaries', theoryHTML: '<h2>Dictionaries</h2><p>A dictionary stores data as key-value pairs. Access values using their key inside <code>[]</code>.</p>', taskHTML: 'Create <code>hero = {"name": "Aria", "hp": 100}</code> and print the value of <strong>"name"</strong>.', initialCode: 'hero = {"name": "Aria", "hp": 100}\n# Print the name:\n', expectedOutput: 'Aria', hint: 'print(hero["name"])' },
+        { id: 'w5-l4', title: 'Updating Dictionaries', theoryHTML: '<h2>Updating Dicts</h2><p>You can add or change values in a dictionary by assigning to a key.</p>', taskHTML: 'Create <code>stats = {"xp": 0}</code>. Add 50 to xp and print it.', initialCode: 'stats = {"xp": 0}\n# Add 50 to xp:\n\n# Print stats["xp"]:\n', expectedOutput: '50', hint: 'stats["xp"] += 50\nprint(stats["xp"])' },
+        { id: 'w5-l5', title: 'Tuples — Locked Data', theoryHTML: '<h2>Tuples</h2><p>A tuple is like a list but <em>immutable</em> — once created, it cannot change. Great for fixed data.</p>', taskHTML: 'Create <code>coords = (10, 20)</code>. Print each value on a separate line.', initialCode: 'coords = (10, 20)\n# Print each element:\n', expectedOutput: '10\n20', hint: 'print(coords[0])\nprint(coords[1])' }
+      ]
     }
   ];
+
 
   let currentPlayer = { name: 'Hero', avatar: '🧙‍♂️', completedLessons: [], xp: 0, stars: 0 };
   let googleUserId = null;
