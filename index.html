@@ -163,6 +163,12 @@
     
     .achievement-toast { position:fixed; bottom:24px; right:24px; background:var(--bg-card2); border:1px solid rgba(124,106,247,0.4); border-radius:var(--radius); padding:16px 20px; display:flex; align-items:center; gap:14px; z-index:200; box-shadow:0 8px 32px rgba(0,0,0,0.4); }
     
+    .interview-header { display:flex; justify-content:space-between; align-items:center; background:#111; padding:20px; border-bottom:2px solid #333; }
+    .timer-box { font-family:var(--mono); font-size:1.5rem; color:var(--red); font-weight:800; background:rgba(239,68,68,0.1); padding:8px 16px; border-radius:8px; border:1px solid rgba(239,68,68,0.3); }
+    .badge-display { display:flex; gap:10px; margin-top:10px; }
+    .badge-icon { background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:12px; padding:10px; font-size:1.5rem; filter:grayscale(100%); opacity:0.3; transition:all 0.3s; }
+    .badge-icon.unlocked { filter:grayscale(0); opacity:1; border-color:var(--yellow); background:rgba(245,200,66,0.1); }
+    
     .chests-container { display: flex; gap: 20px; justify-content: center; margin-top: 10px; }
     .mystery-chest { font-size: 4.5rem; cursor: pointer; transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), filter 0.25s; user-select: none; filter: drop-shadow(0 0 10px rgba(245,200,66,0.3)); }
     .mystery-chest:hover { transform: scale(1.15) translateY(-5px); filter: drop-shadow(0 0 25px rgba(245,200,66,0.8)); }
@@ -217,6 +223,11 @@
       <img id="google-avatar-img" src="" alt="avatar" style="width:80px;height:80px;border-radius:50%;margin-bottom:12px;border:3px solid var(--accent);display:none;" />
       <div id="google-user-name" style="font-size:1.3rem;font-weight:800;">Your Name</div>
       <div id="google-user-email" style="font-size:0.85rem;color:var(--text-secondary);margin-top:4px;"></div>
+      <div class="badge-display" id="profile-badges" style="justify-content:center; margin-top:15px;">
+           <div class="badge-icon" title="Junior Developer" id="badge-junior">👔</div>
+           <div class="badge-icon" title="Mid-Level Engineer" id="badge-mid">💻</div>
+           <div class="badge-icon" title="Senior Architect" id="badge-senior">👑</div>
+      </div>
     </div>
     <div class="avatar-grid" id="avatar-grid"></div>
     <button class="btn-primary" onclick="createHero()">Start Quest ✨</button>
@@ -318,6 +329,38 @@
             <span id="arcade-lives" class="arcade-lives">Lives: ❤️❤️❤️</span>
         </div>
         <canvas id="arcade-canvas" width="300" height="300" style="margin-top:10px;"></canvas>
+    </div>
+  </div>
+</div>
+
+<div id="interview-screen" class="screen" style="flex-direction:column;">
+  <div class="interview-header">
+    <div style="display:flex; align-items:center; gap:12px;">
+        <span style="font-size:1.5rem;">👨‍💼</span>
+        <div>
+            <div style="font-weight:800; font-size:1rem;">Tech Interviewer</div>
+            <div style="font-size:0.75rem; color:var(--text-secondary);">milestone assessment</div>
+        </div>
+    </div>
+    <div class="timer-box" id="interview-timer">40:00</div>
+  </div>
+  <div class="challenge-body">
+    <div class="theory-pane" id="interview-intro-pane">
+        <h2 style="font-size:2rem; margin-bottom:20px;">Technical Simulation</h2>
+        <p style="font-size:1.1rem; line-height:1.6; color:var(--text-secondary);">Welcome to your milestone review. You have <strong>40 minutes</strong> to complete a sequence of 3 complex tasks. There are no hints allowed. Accuracy and speed are your keys to success. Good luck.</p>
+        <button class="btn-primary" onclick="startInterviewLogic()" style="margin-top:30px; font-size:1.2rem; padding:18px 40px;">Begin Interview</button>
+    </div>
+    <div class="code-pane" id="interview-code-pane" style="display:none">
+       <div style="padding:15px 25px; border-bottom:1px solid var(--border); background:rgba(255,255,255,0.02); display:flex; justify-content:space-between;">
+           <span id="interview-question-count" style="font-family:var(--mono); color:var(--accent); font-weight:800;">Task 1/3</span>
+       </div>
+       <div class="code-task" id="interview-task"></div>
+       <div class="editor-wrap"><textarea id="interview-editor" class="code-editor"></textarea></div>
+       <div class="output-wrap"><pre id="interview-output" class="code-output">Process ready...</pre></div>
+       <div class="code-actions">
+           <button class="btn-run" onclick="runInterviewCode()">▶ Compile & Execute</button>
+           <button class="btn-primary" onclick="submitInterviewAnswer()">Submit Solution</button>
+       </div>
     </div>
   </div>
 </div>
@@ -469,9 +512,45 @@
 
 
 
-  let currentPlayer = { name: 'Hero', avatar: '🧙‍♂️', completedLessons: [], xp: 0, stars: 0 };
+  let currentPlayer = { name: 'Hero', avatar: '🧙‍♂️', completedLessons: [], xp: 0, stars: 0, badges: [] };
   let googleUserId = null;
   let currentWorld = null, currentLesson = null;
+
+  const INTERVIEWS = [
+    {
+       level: 'Junior Developer',
+       badgeId: 'junior',
+       icon: '👔',
+       worldMatch: 4, // After W5 (0-indexed 4)
+       tasks: [
+           { id: 'int-j1', title: 'Basic Logic', taskHTML: 'Create a list <code>data = [1, 2, 3]</code>. Loop through it and print only numbers greater than 1.', expectedOutput: '2\n3' },
+           { id: 'int-j2', title: 'Data Flow', taskHTML: 'Define a function <code>process(x, y)</code> that return <code>x + y</code> if the sum is even, else return <code>0</code>. Print <code>process(4, 3)</code>.', expectedOutput: '0' },
+           { id: 'int-j3', title: 'Final Junior Test', taskHTML: 'Given <code>hero = {"atk": 5, "def": 2}</code>. Print the sum of its values.', expectedOutput: '7' }
+       ]
+    },
+    {
+       level: 'Mid-Level Engineer',
+       badgeId: 'mid',
+       icon: '💻',
+       worldMatch: 9, // After W10
+       tasks: [
+           { id: 'int-m1', title: 'Advanced Strings', taskHTML: 'Given <code>s = "Python_Expert_2026"</code>. Use slicing to print "Expert".', expectedOutput: 'Expert' },
+           { id: 'int-m2', title: 'The Factory', taskHTML: 'Using a list comprehension, create a list of even numbers from 0 to 10 (inclusive) and print it.', expectedOutput: '[0, 2, 4, 6, 8, 10]' },
+           { id: 'int-m3', title: 'Error Guardian', taskHTML: 'Write a try/except that attempts to import a non-existent module <code>ghost</code> and prints "Safe" when it fails.', expectedOutput: 'Safe' }
+       ]
+    },
+    {
+       level: 'Senior Architect',
+       badgeId: 'senior',
+       icon: '👑',
+       worldMatch: 14, // After W15
+       tasks: [
+           { id: 'int-s1', title: 'Inheritance Architecture', taskHTML: 'Create class <code>Solid</code>. Create <code>Cube(Solid)</code>. Give Cube a <code>type</code> attribute "Square". Print a Cube instance type.', expectedOutput: 'Square' },
+           { id: 'int-s2', title: 'System Serialization', taskHTML: 'Given <code>raw = \'{"id": 101}\'</code>. Use <code>json.loads</code> and print value for "id".', expectedOutput: '101' },
+           { id: 'int-s3', title: 'Maximum Efficiency', taskHTML: 'Define <code>sort_and_reverse(l)</code>. It should sort then reverse <code>[5, 1, 9]</code>. Print the function result.', expectedOutput: '[9, 5, 1]' }
+       ]
+    }
+  ];
 
   // --- Google Login ---
   function handleGoogleLogin(response) {
@@ -650,6 +729,29 @@
           
           // Next world only unlocks if BOSS is done
           lastLessonCompleted = bossIsCompleted;
+      }
+      
+      // RENDER INTERVIEW MILESTONE after W5, W10, W15
+      const currentInt = INTERVIEWS.find(i => i.worldMatch === index);
+      if (currentInt && lastLessonCompleted) {
+          const badgeUnlocked = currentPlayer.badges.includes(currentInt.badgeId);
+          let mNode = document.createElement('div');
+          mNode.className = 'world-node ' + (badgeUnlocked ? '' : '');
+          mNode.style.marginTop = '40px';
+          mNode.style.marginBottom = '60px';
+          
+          mNode.innerHTML = `
+            <div class="world-node-icon" style="width:140px;height:140px;font-size:5rem;border-color:#fff;border-style:dashed;background:#111;box-shadow:0 0 50px rgba(255,255,255,0.1)">${currentInt.icon}</div>
+            <div class="world-node-info" style="min-width:340px; border:2px solid #fff; position:relative;">
+                <div style="position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:#000; color:#fff; font-size:0.6rem; padding:2px 10px; border:1px solid #fff; border-radius:999px; letter-spacing:1px; font-weight:900;">MILESTONE</div>
+                <div class="world-node-name" style="font-size:1.4rem;">${currentInt.level} Simulation</div>
+                <div style="color:var(--text-secondary); font-size:0.8rem; margin-top:5px;">${badgeUnlocked ? '✅ HIRED' : '⚠️ STATUS: REVIEW PENDING'}</div>
+            </div>
+          `;
+          if (!badgeUnlocked) {
+              mNode.onclick = () => { currentInterview = currentInt; openInterviewScreen(); };
+          }
+          grid.appendChild(mNode);
       }
     });
 
@@ -1066,6 +1168,103 @@
       }, 1000);
     }
   }
+
+  // --- Interview Simulation System ---
+  let currentInterview = null;
+  let interviewTaskIndex = 0;
+  let interviewTimer = null;
+  let interviewTimeLeft = 2400; // 40 mins
+
+  function openInterviewScreen() {
+      hideAll();
+      document.getElementById('interview-screen').style.display = 'flex';
+      document.getElementById('interview-intro-pane').style.display = 'flex';
+      document.getElementById('interview-code-pane').style.display = 'none';
+  }
+
+  function startInterviewLogic() {
+      document.getElementById('interview-intro-pane').style.display = 'none';
+      document.getElementById('interview-code-pane').style.display = 'flex';
+      interviewTaskIndex = 0;
+      interviewTimeLeft = 2400;
+      updateInterviewTimer();
+      loadInterviewTask();
+      
+      clearInterval(interviewTimer);
+      interviewTimer = setInterval(() => {
+          interviewTimeLeft--;
+          updateInterviewTimer();
+          if (interviewTimeLeft <= 0) {
+              clearInterval(interviewTimer);
+              alert("TIME EXPIRED! The interview has concluded. Please try again later.");
+              openMapScreen();
+          }
+      }, 1000);
+  }
+
+  function updateInterviewTimer() {
+      const min = Math.floor(interviewTimeLeft / 60);
+      const sec = interviewTimeLeft % 60;
+      document.getElementById('interview-timer').textContent = `${min}:${sec < 10 ? '0' : ''}${sec}`;
+  }
+
+  function loadInterviewTask() {
+      const task = currentInterview.tasks[interviewTaskIndex];
+      document.getElementById('interview-task').innerHTML = `<h3>${task.title}</h3><p>${task.taskHTML}</p>`;
+      document.getElementById('interview-editor').value = "";
+      document.getElementById('interview-question-count').textContent = `Task ${interviewTaskIndex + 1}/${currentInterview.tasks.length}`;
+      document.getElementById('interview-output').textContent = "Ready for execution...";
+  }
+
+  function runInterviewCode() {
+      const code = document.getElementById('interview-editor').value;
+      const out = document.getElementById('interview-output');
+      out.textContent = ''; out.className = 'code-output';
+      
+      Sk.configure({ output: (text) => { out.textContent += text; }, read: (x) => Sk.builtinFiles["files"][x] });
+      Sk.misceval.asyncToPromise(() => Sk.importMainWithBody("<stdin>", false, code, true))
+        .catch(err => { out.textContent = err.toString(); out.className = 'code-output error'; });
+  }
+
+  function submitInterviewAnswer() {
+      const out = document.getElementById('interview-output').textContent.trim();
+      const expected = currentInterview.tasks[interviewTaskIndex].expectedOutput.trim();
+      
+      if (out === expected) {
+          interviewTaskIndex++;
+          if (interviewTaskIndex < currentInterview.tasks.length) {
+              loadInterviewTask();
+          } else {
+              clearInterval(interviewTimer);
+              if(!currentPlayer.badges) currentPlayer.badges = [];
+              if(!currentPlayer.badges.includes(currentInterview.badgeId)) {
+                  currentPlayer.badges.push(currentInterview.badgeId);
+              }
+              currentPlayer.xp += 500;
+              saveProgress();
+              alert(`CONGRATULATIONS! You passed the ${currentInterview.level} simulation and earned a badge!`);
+              openProfileScreen(); // Go to profile to see the new badge
+          }
+      } else {
+          alert("The solution does not match the requirements. Keep trying!");
+      }
+  }
+
+  // Update profile badges UI
+  function updateProfileBadges() {
+      ['junior','mid','senior'].forEach(b => {
+          const el = document.getElementById('badge-' + b);
+          if (currentPlayer.badges && currentPlayer.badges.includes(b)) el.classList.add('unlocked');
+          else el.classList.remove('unlocked');
+      });
+  }
+
+  // Override openProfileScreen to update badges
+  const originalOpenProfile = openProfileScreen;
+  openProfileScreen = () => {
+      updateProfileBadges();
+      originalOpenProfile();
+  };
 
 </script>
 </body>
