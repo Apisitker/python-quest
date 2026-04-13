@@ -527,6 +527,7 @@
     grid.innerHTML = '';
     
     let lastLessonCompleted = true; // Very first lesson of World 1 is always unlocked
+    let currentTaskNode = null;
     
     WORLDS.forEach((w, index) => {
       // Create World Header Node
@@ -566,6 +567,10 @@
                 currentLesson = l; 
                 openChallenge(); 
              };
+             // The "Current Task" is the first unlocked but not yet completed lesson
+             if (!isCompleted && !currentTaskNode) {
+                 currentTaskNode = lNode;
+             }
           }
           grid.appendChild(lNode);
           
@@ -573,6 +578,13 @@
           lastLessonCompleted = isCompleted;
       });
     });
+
+    // Auto-scroll to current task
+    if (currentTaskNode) {
+        setTimeout(() => {
+            currentTaskNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+    }
   }
 
   function openChallenge() {
