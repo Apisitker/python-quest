@@ -360,8 +360,89 @@
         { id: 'w5-l4', title: 'Updating Dictionaries', theoryHTML: '<h2>Updating Dicts</h2><p>You can add or change values in a dictionary by assigning to a key.</p>', taskHTML: 'Create <code>stats = {"xp": 0}</code>. Add 50 to xp and print it.', initialCode: 'stats = {"xp": 0}\n# Add 50 to xp:\n\n# Print stats["xp"]:\n', expectedOutput: '50', hint: 'stats["xp"] += 50\nprint(stats["xp"])' },
         { id: 'w5-l5', title: 'Tuples — Locked Data', theoryHTML: '<h2>Tuples</h2><p>A tuple is like a list but <em>immutable</em> — once created, it cannot change. Great for fixed data.</p>', taskHTML: 'Create <code>coords = (10, 20)</code>. Print each value on a separate line.', initialCode: 'coords = (10, 20)\n# Print each element:\n', expectedOutput: '10\n20', hint: 'print(coords[0])\nprint(coords[1])' }
       ]
+    },
+    {
+      id: 'w6', name: 'String Sorcery', color: '#e879f9', icon: '🪄', difficulty: 'Intermediate',
+      lessons: [
+        { id: 'w6-l1', title: 'The Slice', theoryHTML: '<h2>Slicing</h2><p>Access a part of a string using <code>[start:end]</code>.</p>', taskHTML: 'Slice the first 3 letters of <code>magic = "Fireball"</code> and print them.', initialCode: 'magic = "Fireball"\n# Slice 0 to 3:\n', expectedOutput: 'Fir', hint: 'print(magic[0:3])' },
+        { id: 'w6-l2', title: 'Finding Secrets', theoryHTML: '<h2>find()</h2><p>Search for text within a string. Returns the index or -1.</p>', taskHTML: 'Find the index of <strong>"X"</strong> in <code>map_str = "WaterXFire"</code> and print it.', initialCode: 'map_str = "WaterXFire"\n# Find "X":\n', expectedOutput: '5', hint: 'print(map_str.find("X"))' },
+        { id: 'w6-l3', title: 'Modern Echoes (f-strings)', theoryHTML: '<h2>f-strings</h2><p>Insert variables into strings easily using <code>f"Hello {name}"</code>.</p>', taskHTML: 'Given <code>gold = 50</code>, print the string <strong>"Gold: 50"</strong> using an f-string.', initialCode: 'gold = 50\n# Use f-string:\n', expectedOutput: 'Gold: 50', hint: 'print(f"Gold: {gold}")' }
+      ]
+    },
+    {
+      id: 'w7', name: 'File Fortress', color: '#38bdf8', icon: '🏰', difficulty: 'Intermediate',
+      lessons: [
+        { id: 'w7-l1', title: 'Knowledge Scroll', theoryHTML: '<h2>Reading Files</h2><p>Use <code>open()</code> with <code>"r"</code> to read. (Simulated in Skulpt).</p>', taskHTML: 'Open "scroll.txt" and print its content. (Note: Skulpt simulates this with a dummy file).', initialCode: '# In this sandbox, "scroll.txt" exists with content "Secret"\nf = open("scroll.txt", "r")\n# print content:\n', expectedOutput: 'Secret', hint: 'print(f.read())' },
+        { id: 'w7-l2', title: 'Writing History', theoryHTML: '<h2>Writing Files</h2><p>Use <code>"w"</code> to write. This overwrites existing content.</p>', taskHTML: 'Open "diary.txt" in write mode, write <strong>"Done"</strong>, then close it.', initialCode: 'f = open("diary.txt", "w")\n# Write "Done":\n\nf.close()', expectedOutput: '', hint: 'f.write("Done")' },
+        { id: 'w7-l3', title: 'The Context Guard', theoryHTML: '<h2>with Statement</h2><p>The <code>with</code> handles opening and closing files automatically.</p>', taskHTML: 'Use <code>with open("log.txt", "w") as f:</code> to write <strong>"Saved"</strong>.', initialCode: '# Use with context manager:\n', expectedOutput: '', hint: 'with open("log.txt", "w") as f:\n    f.write("Saved")' }
+      ]
+    },
+    {
+      id: 'w8', name: 'Exception Eyrie', color: '#fb7185', icon: '🦅', difficulty: 'Intermediate',
+      lessons: [
+        { id: 'w8-l1', title: 'Catching Mistakes', theoryHTML: '<h2>try/except</h2><p>Prevent crashes by catching errors in an <code>except</code> block.</p>', taskHTML: 'Try to print <code>1/0</code>. Catch the <code>ZeroDivisionError</code> and print <strong>"Shielded"</strong>.', initialCode: '# Use try/except:\n', expectedOutput: 'Shielded', hint: 'try:\n    print(1/0)\nexcept ZeroDivisionError:\n    print("Shielded")' },
+        { id: 'w8-l2', title: 'The Final Guard', theoryHTML: '<h2>finally</h2><p>Code in <code>finally</code> runs no matter what happens.</p>', taskHTML: 'Write a try/except that catches any error, and a finally block that prints <strong>"Done"</strong>.', initialCode: 'try:\n    x = bad_var\nexcept:\n    pass\n# add finally:\n', expectedOutput: 'Done', hint: 'finally:\n    print("Done")' },
+        { id: 'w8-l3', title: 'Raising Alarms', theoryHTML: '<h2>raise</h2><p>You can trigger your own errors using <code>raise</code>.</p>', taskHTML: 'If <code>hp < 0</code>, raise a <code>ValueError</code> with message <strong>"Fainted"</strong>. (Set hp = -1).', initialCode: 'hp = -1\n# raise error if hp < 0:\n', expectedOutput: 'ValueError: Fainted', hint: 'if hp < 0:\n    raise ValueError("Fainted")' }
+      ]
+    },
+    {
+      id: 'w9', name: 'Modules Meadow', color: '#4ade80', icon: '🌿', difficulty: 'Advanced',
+      lessons: [
+        { id: 'w9-l1', title: 'Importing Magic', theoryHTML: '<h2>Modules</h2><p>Import extra powers using <code>import</code>.</p>', taskHTML: 'Import <code>math</code> and print the square root (<code>sqrt</code>) of <strong>16</strong>.', initialCode: '# Import and print sqrt(16):\n', expectedOutput: '4.0', hint: 'import math\nprint(math.sqrt(16))' },
+        { id: 'w9-l2', title: 'Random Chance', theoryHTML: '<h2>random</h2><p>The <code>random</code> module handles chance.</p>', taskHTML: 'Import <code>random</code>. Set the seed to <strong>42</strong> and print a <code>randint(1, 10)</code>.', initialCode: 'import random\nrandom.seed(42)\n# print a random integer 1-10:\n', expectedOutput: '2', hint: 'print(random.randint(1, 10))' },
+        { id: 'w9-l3', title: 'Selective Spells', theoryHTML: '<h2>from ... import</h2><p>Import only what you need to keep things clean.</p>', taskHTML: 'Use <code>from math import pi</code>. Print <code>pi</code> rounded to 2 decimal places.', initialCode: '# from math import pi:\n', expectedOutput: '3.14', hint: 'from math import pi\nprint(round(pi, 2))' }
+      ]
+    },
+    {
+      id: 'w10', name: 'Comprehension Canyon', color: '#fbbf24', icon: '🏜️', difficulty: 'Advanced',
+      lessons: [
+        { id: 'w10-l1', title: 'Quick Lists', theoryHTML: '<h2>List Comprehensions</h2><p>Create lists in a single line: <code>[x for x in data]</code>.</p>', taskHTML: 'Use a comprehension to create a list of squares for <code>[1, 2, 3]</code>. Print it.', initialCode: 'nums = [1, 2, 3]\n# Use comprehension:\n', expectedOutput: '[1, 4, 9]', hint: 'print([x*x for x in nums])' },
+        { id: 'w10-l2', title: 'Filtered Power', theoryHTML: '<h2>Comprehension If</h2><p>Add filters: <code>[x for x in data if check]</code>.</p>', taskHTML: 'Get even numbers from <code>range(5)</code> using a comprehension. Print it.', initialCode: '# Evens from range(5):\n', expectedOutput: '[0, 2, 4]', hint: 'print([x for x in range(5) if x % 2 == 0])' },
+        { id: 'w10-l3', title: 'Dictionary Forge', theoryHTML: '<h2>Dict Comprehension</h2><p>Works for dictionaries too: <code>{k:v for ...}</code>.</p>', taskHTML: 'Create a dict where keys are letters in <strong>"ABC"</strong> and values are 0. Print it.', initialCode: '# {char: 0 for char in "ABC"}\n', expectedOutput: "{'A': 0, 'B': 0, 'C': 0}", hint: 'print({c: 0 for c in "ABC"})' }
+      ]
+    },
+    {
+      id: 'w11', name: 'Class Cathedral', color: '#818cf8', icon: '⛪', difficulty: 'Advanced',
+      lessons: [
+        { id: 'w11-l1', title: 'The Blueprint', theoryHTML: '<h2>Classes</h2><p>A class is a template for objects.</p>', taskHTML: 'Define an empty class <code>Hero</code>. Create an instance called <code>h</code> and print it.', initialCode: '# Define Hero:\n\n# Create h:\n', expectedOutput: '<Hero object>', hint: 'class Hero: pass\nh = Hero()\nprint(h)' },
+        { id: 'w11-l2', title: 'The Awakener (__init__)', theoryHTML: '<h2>__init__</h2><p>The <code>__init__</code> method sets up new objects.</p>', taskHTML: 'Give <code>Hero</code> an <code>__init__</code> that sets <code>self.name</code>. Create "Bolt" and print his name.', initialCode: 'class Hero:\n    # add __init__:\n\nbolt = Hero("Bolt")\nprint(bolt.name)', expectedOutput: 'Bolt', hint: 'def __init__(self, name):\n    self.name = name' },
+        { id: 'w11-l3', title: 'Inner Strength (Methods)', theoryHTML: '<h2>Methods</h2><p>Functions inside a class are called methods.</p>', taskHTML: 'Add a <code>shout()</code> method to <code>Hero</code> that prints **"FOR GLORY!"**. Call it on <code>h</code>.', initialCode: 'class Hero:\n    def shout(self):\n        pass\n\nh = Hero()\n# call shout:\n', expectedOutput: 'FOR GLORY!', hint: 'h.shout()' }
+      ]
+    },
+    {
+      id: 'w12', name: 'Inheritance Island', color: '#2dd4bf', icon: '🏝️', difficulty: 'Advanced',
+      lessons: [
+        { id: 'w12-l1', title: 'Family Ties', theoryHTML: '<h2>Inheritance</h2><p>Classes can inherit powers from parent classes.</p>', taskHTML: 'Create <code>Mage</code> that inherits from <code>Hero</code>. Add a <code>cast()</code> method that prints <strong>"Spell!"</strong>.', initialCode: 'class Hero: pass\n# Create Mage(Hero):\n\nm = Mage()\nm.cast()', expectedOutput: 'Spell!', hint: 'class Mage(Hero):\n    def cast(self):\n        print("Spell!")' },
+        { id: 'w12-l2', title: 'The super() Power', theoryHTML: '<h2>super()</h2><p>Use <code>super()</code> to call parent methods.</p>', taskHTML: 'In <code>Mage.__init__</code>, use <code>super().__init__(name)</code>. Create "Medivh" and print his name.', initialCode: 'class Hero:\n    def __init__(self, name): self.name = name\n\nclass Mage(Hero):\n    def __init__(self, name):\n        # use super():\n\nm = Mage("Medivh")\nprint(m.name)', expectedOutput: 'Medivh', hint: 'super().__init__(name)' },
+        { id: 'w12-l3', title: 'Overriding Destiny', theoryHTML: '<h2>Method Overriding</h2><p>Replace a parent method with a new version in the child.</p>', taskHTML: 'Override <code>Hero.attack()</code> in <code>Warrior</code> to print <strong>"SMASH!"</strong> instead of "Hit".', initialCode: 'class Hero:\n    def attack(self): print("Hit")\n\nclass Warrior(Hero):\n    # override attack:\n\nw = Warrior()\nw.attack()', expectedOutput: 'SMASH!', hint: 'def attack(self):\n    print("SMASH!")' }
+      ]
+    },
+    {
+      id: 'w13', name: 'Library Library', color: '#f472b6', icon: '📚', difficulty: 'Advanced',
+      lessons: [
+        { id: 'w13-l1', title: 'Time Travel', theoryHTML: '<h2>datetime</h2><p>Handle dates and times.</p>', taskHTML: 'Import <code>datetime</code>. Print the current year. (Simulated) ', initialCode: 'import datetime\n# Print year:\n', expectedOutput: '2026', hint: 'print(datetime.datetime.now().year)' },
+        { id: 'w13-l2', title: 'The JSON Scroll', theoryHTML: '<h2>JSON</h2><p>JSON is a common data format.</p>', taskHTML: 'Use <code>json.loads()</code> on <code>\'{"hp": 10}\'</code> and print the "hp" value.', initialCode: 'import json\ndata = \'{"hp": 10}\'\n# Parse and print hp:\n', expectedOutput: '10', hint: 'parsed = json.loads(data)\nprint(parsed["hp"])' },
+        { id: 'w13-l3', title: 'System Secrets (os)', theoryHTML: '<h2>os</h2><p>Interact with the operating system.</p>', taskHTML: 'Import <code>os</code>. Print <code>os.name</code>.', initialCode: 'import os\n# Print os.name:\n', expectedOutput: 'posix', hint: 'print(os.name)' }
+      ]
+    },
+    {
+      id: 'w14', name: 'Algorithm Abyss', color: '#94a3b8', icon: '🕳️', difficulty: 'Expert',
+      lessons: [
+        { id: 'w14-l1', title: 'Linear Search', theoryHTML: '<h2>Searching</h2><p>Find an item by checking one by one.</p>', taskHTML: 'Check if <strong>7</strong> is in <code>[1, 3, 7, 9]</code>. Print <strong>"Found"</strong> if it is.', initialCode: 'nums = [1, 3, 7, 9]\n# Linear search for 7:\n', expectedOutput: 'Found', hint: 'if 7 in nums: print("Found")' },
+        { id: 'w14-l2', title: 'The Bubble Sort', theoryHTML: '<h2>Sorting</h2><p>Simple sorting algorithm.</p>', taskHTML: 'Sort <code>[5, 1, 4]</code> using <code>list.sort()</code> and print it.', initialCode: 'data = [5, 1, 4]\n# Sort and print:\n', expectedOutput: '[1, 4, 5]', hint: 'data.sort()\nprint(data)' },
+        { id: 'w14-l3', title: 'Binary Logic', theoryHTML: '<h2>Efficiency</h2><p>Big O notation describes speed.</p>', taskHTML: 'Print the string <strong>"O(n)"</strong> as the answer for linear search complexity.', initialCode: '# What is linear search complexity?\n', expectedOutput: 'O(n)', hint: 'print("O(n)")' }
+      ]
+    },
+    {
+      id: 'w15', name: 'The Final Trial', color: '#fbbf24', icon: '👑', difficulty: 'Legendary',
+      lessons: [
+        { id: 'w15-l1', title: 'The Master Program', theoryHTML: '<h2>Integration</h2><p>Combine everything you know.</p>', taskHTML: 'Create a <code>Player</code> class with <code>name</code> and <code>level</code>. In __init__, set self.name and self.level. Create "Hero" with level 99. Print f"{self.name}: {self.level}".', initialCode: '# Final challenge 1:\n', expectedOutput: 'Hero: 99', hint: 'class Player:\n    def __init__(self, n, l):\n        self.name = n\n        self.level = l\np = Player("Hero", 99)\nprint(f"{p.name}: {p.level}")' },
+        { id: 'w15-l2', title: 'Logic Gate', theoryHTML: '<h2>Logic</h2><p>Complex conditionals.</p>', taskHTML: 'Given <code>x=True, y=False</code>. Print the result of <code>x and not y</code>.', initialCode: 'x, y = True, False\n# Result:\n', expectedOutput: 'True', hint: 'print(x and not y)' },
+        { id: 'w15-l3', title: 'The Python Quest', theoryHTML: '<h2>Conclusion</h2><p>You are a Python Master!</p>', taskHTML: 'Print <strong>"I am a Python Master!"</strong> to finish the game.', initialCode: '# Final words:\n', expectedOutput: 'I am a Python Master!', hint: 'print("I am a Python Master!")' }
+      ]
     }
   ];
+
 
 
   let currentPlayer = { name: 'Hero', avatar: '🧙‍♂️', completedLessons: [], xp: 0, stars: 0 };
